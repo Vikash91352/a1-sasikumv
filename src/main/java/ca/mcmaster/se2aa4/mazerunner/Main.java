@@ -15,24 +15,24 @@ import org.apache.commons.cli.ParseException;
 
 abstract class MazeRunnerGame {
 
-    private int[] playerPosition;
-    private String playerDirection;
-    private String[][] mazeRunnerMap;
-    private StringBuffer mazePath = new StringBuffer();
+    protected int[] markerPosition;
+    protected String markerDirection = "East";
+    protected String[][] mazeRunnerMap;
+    protected StringBuffer mazePath = new StringBuffer();
 
-    public MazeRunnerGame(int[] playerPos, String playerDir, String[][] gameMap) {
-        playerPosition = playerPos;
+    public MazeRunnerGame(String[][] gameMap) {
         mazeRunnerMap = gameMap;
-        playerDirection = playerDir;
     }
 
-    public int[] getPlayerPosition(){
-        return playerPosition;
+    public int[] getMarkerPosition(){
+        return markerPosition;
     }
 
-    public String getPlayerDirection(){
-        return playerDirection;
+    public String getMarkerDirection(){
+        return markerDirection;
     }
+
+    abstract protected int[] findWestSideEntrance();
 
     abstract protected void turnRight();
 
@@ -50,8 +50,27 @@ abstract class MazeRunnerGame {
 
 class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
-    public MazeRunnerGamePathMachine(int[] playerPos, String playerDir, String[][] gameMap) {
-        super(playerPos, playerDir, gameMap);
+    public MazeRunnerGamePathMachine(String[][] gameMap) {
+        super(gameMap);
+    }
+
+    protected int[] findWestSideEntrance(){
+
+        int[] initialPosition = new int[2];
+
+        for (int i = 0; i < mazeRunnerMap.length; i++) {
+
+            if (mazeRunnerMap[i][0].equals(" ")) {
+
+                initialPosition[0] = i;
+                initialPosition[1] = 0;
+
+            }
+
+        }
+
+        return initialPosition;
+
     }
 
     protected void turnRight(){
