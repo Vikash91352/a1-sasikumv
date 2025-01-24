@@ -47,6 +47,14 @@ public class Main {
                 }
 
             }
+
+            if (commandLine.hasOption("p")) {
+
+                String pathInput = args[3];
+                logger.info("Path Verified ");
+
+            }
+
         } catch(Exception e) {
             logger.error("/!\\ An error has occured /!\\");
         }
@@ -54,4 +62,33 @@ public class Main {
         logger.info("PATH NOT COMPUTED");
         logger.info("** End of MazeRunner");
     }
+}
+
+abstract class MazeRunnerGame {
+
+    private int[] playerPosition;
+    private String [] playerDirection;
+    private String[][] mazeRunnerMap;
+    private StringBuffer mazePath = new StringBuffer();
+
+    public MazeRunnerGame(int[] playerPos, String[] playerDir, String[][] gameMap) {
+        playerPosition = playerPos;
+        mazeRunnerMap = gameMap;
+        playerDirection = playerDir;
+    }
+
+    public int[] getPlayerPosition(){
+        return playerPosition;
+    }
+
+    abstract public void turnRight();
+
+    abstract public void turnLeft ();
+
+    abstract public void moveForward();
+
+    abstract public StringBuffer printMazePath();
+
+    abstract public Boolean verifyMazePath();
+
 }
