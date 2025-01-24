@@ -13,6 +13,114 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+abstract class MazeRunnerGame {
+
+    private int[] playerPosition;
+    private String playerDirection;
+    private String[][] mazeRunnerMap;
+    private StringBuffer mazePath = new StringBuffer();
+
+    public MazeRunnerGame(int[] playerPos, String playerDir, String[][] gameMap) {
+        playerPosition = playerPos;
+        mazeRunnerMap = gameMap;
+        playerDirection = playerDir;
+    }
+
+    public int[] getPlayerPosition(){
+        return playerPosition;
+    }
+
+    public String getPlayerDirection(){
+        return playerDirection;
+    }
+
+    abstract protected void turnRight();
+
+    abstract protected void turnLeft();
+
+    abstract protected void moveForward();
+
+    abstract public void printMazePath();
+
+    abstract public StringBuffer convertCanonicalToFactorized(String canonicalPathForm);
+
+    abstract public Boolean verifyMazePath();
+
+}
+
+class MazeRunnerGamePathMachine extends MazeRunnerGame {
+
+    public MazeRunnerGamePathMachine(int[] playerPos, String playerDir, String[][] gameMap) {
+        super(playerPos, playerDir, gameMap);
+    }
+
+    protected void turnRight(){
+
+        System.out.println("Move Right");
+
+    }
+
+    protected void turnLeft(){
+
+        System.out.println("Move Left");
+
+    }
+
+    protected void moveForward(){
+
+        System.out.println("Move Forward");
+
+    }
+
+    public void printMazePath(){
+
+        System.out.println("Print Maze Path");
+
+    }
+
+    public StringBuffer convertCanonicalToFactorized(String canonicalPathForm){
+
+        StringBuffer factorizedPathForm = new StringBuffer();
+
+        char currentChar = ' ';
+        int currentCharCount = 0;
+        for (int i = 0; i < canonicalPathForm.length(); i++) {
+ 
+            if (i == 0) {
+                currentChar = canonicalPathForm.charAt(i);
+                currentCharCount = 1;
+
+            }else if (currentChar == canonicalPathForm.charAt(i)) {
+                currentCharCount += 1;
+
+            }else if (!(currentChar == canonicalPathForm.charAt(i))) {
+                factorizedPathForm.append(Integer.toString(currentCharCount));
+                factorizedPathForm.append(Character.toString(currentChar));
+
+                currentChar = canonicalPathForm.charAt(i);
+                currentCharCount = 1;
+
+            }
+            if (i == (canonicalPathForm.length() - 1)) {
+                factorizedPathForm.append(Integer.toString(currentCharCount));
+                factorizedPathForm.append(Character.toString(currentChar));
+
+            }
+
+        }
+
+        return factorizedPathForm;
+
+    }
+
+    public Boolean verifyMazePath(){
+
+        return true;
+    }
+
+
+}
+
 public class Main {
 
     private static final Logger logger = LogManager.getLogger();
@@ -61,34 +169,6 @@ public class Main {
         logger.info("**** Computing path");
         logger.info("PATH NOT COMPUTED");
         logger.info("** End of MazeRunner");
+
     }
-}
-
-abstract class MazeRunnerGame {
-
-    private int[] playerPosition;
-    private String [] playerDirection;
-    private String[][] mazeRunnerMap;
-    private StringBuffer mazePath = new StringBuffer();
-
-    public MazeRunnerGame(int[] playerPos, String[] playerDir, String[][] gameMap) {
-        playerPosition = playerPos;
-        mazeRunnerMap = gameMap;
-        playerDirection = playerDir;
-    }
-
-    public int[] getPlayerPosition(){
-        return playerPosition;
-    }
-
-    abstract public void turnRight();
-
-    abstract public void turnLeft ();
-
-    abstract public void moveForward();
-
-    abstract public StringBuffer printMazePath();
-
-    abstract public Boolean verifyMazePath();
-
 }
