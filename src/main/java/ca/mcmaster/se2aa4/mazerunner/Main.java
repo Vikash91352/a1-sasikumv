@@ -57,6 +57,8 @@ abstract class MazeRunnerGame {
 
 class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
+    private static final Logger logger = LogManager.getLogger();
+
     public MazeRunnerGamePathMachine(String[][] gameMap) {
         super(gameMap);
 
@@ -201,7 +203,31 @@ class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
     public void printMazePath(){
 
-        System.out.println("Print Maze Path");
+        StringBuffer canonicalPath = new StringBuffer();
+
+        while (true) {
+
+            if (verifyNextMovement()) {
+
+                moveForward();
+                canonicalPath.append("F");
+
+                if (markerPosition[1] == (mazeRunnerMap[0].length - 1)) {
+
+                    logger.info("The Canonical Path is " + canonicalPath.toString());
+
+                    break;
+                }
+                    
+            } else {
+
+                logger.info("Out of scope for simple Algorithim");
+
+                break;
+
+            }
+
+        }
 
     }
 
@@ -304,13 +330,18 @@ public class Main {
                 String file = args[1];
 
                 logger.info("**** Reading the maze from file " + file);
+
                 BufferedReader reader = new BufferedReader(new FileReader(file));
+
                 String line;
 
                 ArrayList<ArrayList<String>> mazeMapArrayList = new ArrayList<ArrayList<String>>();
-
+                
                 int rowCount = 0;
                 while ((line = reader.readLine()) != null) {
+
+                    mazeMapArrayList.add(new ArrayList<String>(line.length()));
+
                     for (int idx = 0; idx < line.length(); idx++) {
                         char characterInLine = line.charAt(idx);
                         String singleStringInLine = Character.toString(characterInLine);
@@ -327,6 +358,7 @@ public class Main {
                     logger.trace(System.lineSeparator());
                 }
 
+
                 String[][] mazeMapArray = new String[mazeMapArrayList.size()][];
 
                 //Converting 2d ArrayList to 2d Array
@@ -340,7 +372,6 @@ public class Main {
                     }
 
                     if (mazeRowArrayList.size() < mazeMapArrayList.get(0).size()) {
-                        System.out.println(i);
                         for (int j = mazeRowArrayList.size(); j < mazeMapArrayList.get(1).size(); j++) {
                             mazeRowArray[j] = " ";
                         }     
@@ -349,6 +380,7 @@ public class Main {
                     mazeMapArray[i] = mazeRowArray;
                 }
 
+                logger.info("**** Computing path");
                 MazeRunnerGame mazeRunnerObject = new MazeRunnerGamePathMachine(mazeMapArray);
                 mazeRunnerObject.printMazePath();
 
