@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
+import java.lang.String;
+import java.util.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,8 +18,10 @@ import org.apache.commons.cli.ParseException;
 
 abstract class MazeRunnerGame {
 
-    protected int[] markerPosition;
-    protected String markerDirection = "East";
+    protected int[] markerPosition = new int[2];
+
+    protected StringBuffer markerDirection = new StringBuffer("East");
+
     protected String[][] mazeRunnerMap;
     protected StringBuffer mazePath = new StringBuffer();
 
@@ -28,7 +33,7 @@ abstract class MazeRunnerGame {
         return markerPosition;
     }
 
-    public String getMarkerDirection(){
+    public StringBuffer getMarkerDirection(){
         return markerDirection;
     }
 
@@ -38,13 +43,15 @@ abstract class MazeRunnerGame {
 
     abstract protected void turnLeft();
 
+    abstract protected Boolean verifyNextMovement();
+
     abstract protected void moveForward();
 
     abstract public void printMazePath();
 
     abstract public StringBuffer convertCanonicalToFactorized(String canonicalPathForm);
 
-    abstract public Boolean verifyMazePath();
+    abstract public Boolean verifyMazePath(String userInputedPath);
 
 }
 
@@ -52,6 +59,10 @@ class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
     public MazeRunnerGamePathMachine(String[][] gameMap) {
         super(gameMap);
+
+        markerPosition[0] = findWestSideEntrance()[0];
+        markerPosition[1] = findWestSideEntrance()[1];
+
     }
 
     protected int[] findWestSideEntrance(){
@@ -75,19 +86,116 @@ class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
     protected void turnRight(){
 
-        System.out.println("Move Right");
+        int markerDirectionLength = markerDirection.length();
+        String stringMarkerDirection = markerDirection.toString();
+        markerDirection.delete(0,markerDirectionLength);
+
+        if (stringMarkerDirection.equals("North")) {
+
+            markerDirection.append("East");
+
+        }else if (stringMarkerDirection.equals("East")) {
+
+            markerDirection.append("South");
+
+        }else if (stringMarkerDirection.equals("South")) {
+
+            markerDirection.append("West");
+
+        }else if (stringMarkerDirection.equals("West")) {
+
+            markerDirection.append("North");
+
+        }
 
     }
 
     protected void turnLeft(){
 
-        System.out.println("Move Left");
+        int markerDirectionLength = markerDirection.length();
+        String stringMarkerDirection = markerDirection.toString();
+        markerDirection.delete(0,markerDirectionLength);
+
+        if (stringMarkerDirection.equals("North")) {
+
+            markerDirection.append("West");
+
+        }else if (stringMarkerDirection.equals("East")) {
+
+            markerDirection.append("North");
+
+        }else if (stringMarkerDirection.equals("South")) {
+
+            markerDirection.append("East");
+
+        }else if (stringMarkerDirection.equals("West")) {
+
+            markerDirection.append("South");
+
+        }
+
+    }
+
+    protected Boolean verifyNextMovement(){
+
+        int[] currentMarkerPosition = new int[2];
+        currentMarkerPosition[0] = markerPosition[0];
+        currentMarkerPosition[1] = markerPosition[1];
+
+        String stringMarkerDirection = markerDirection.toString();
+
+        if (stringMarkerDirection.equals("North")) {
+
+            currentMarkerPosition[0] -= 1;
+
+        }else if (stringMarkerDirection.equals("East")) {
+
+            currentMarkerPosition[1] += 1;
+
+        }else if (stringMarkerDirection.equals("South")) {
+
+            currentMarkerPosition[0] += 1;
+
+        }else if (stringMarkerDirection.equals("West")) {
+
+            currentMarkerPosition[1] -= 1;
+
+        }
+
+        if (currentMarkerPosition[1] > (mazeRunnerMap[0].length - 1)) {
+
+            return false;
+        }
+        
+        if (mazeRunnerMap[currentMarkerPosition[0]][currentMarkerPosition[1]].equals(" ")) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
     protected void moveForward(){
 
-        System.out.println("Move Forward");
+        String stringMarkerDirection = markerDirection.toString();
+
+        if (stringMarkerDirection.equals("North")) {
+
+            markerPosition[0] -= 1;
+
+        }else if (stringMarkerDirection.equals("East")) {
+
+            markerPosition[1] += 1;
+
+        }else if (stringMarkerDirection.equals("South")) {
+
+            markerPosition[0] += 1;
+
+        }else if (stringMarkerDirection.equals("West")) {
+
+            markerPosition[1] -= 1;
+
+        }
 
     }
 
@@ -132,9 +240,44 @@ class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
     }
 
-    public Boolean verifyMazePath(){
+    public Boolean verifyMazePath(String userInputedPath){
 
-        return true;
+        for (int i = 0; i < userInputedPath.length(); i++) {
+
+            if (userInputedPath.charAt(i) == 'F') {
+
+                if (verifyNextMovement()) {
+
+                    moveForward();
+                    
+                } else {
+
+                    return false;
+
+                }
+
+            } else if (userInputedPath.charAt(i) == 'R') {
+
+                turnRight();
+
+            } else if (userInputedPath.charAt(i) == 'L') {
+
+                turnLeft();
+
+            } else {
+
+                System.out.println("Invalid User Input");
+                return false;
+
+            }
+
+        }
+
+        if (markerPosition[1] == (mazeRunnerMap[0].length - 1)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
@@ -148,6 +291,7 @@ public class Main {
 
         Options options = new Options();
         options.addOption("i", true, "Reading the maze from file");
+        options.addOption("p", true, "Verify User Given Path");
 
         CommandLineParser commandLineParser = new DefaultParser();
         CommandLine commandLine = commandLineParser.parse( options, args);        
@@ -155,38 +299,126 @@ public class Main {
         logger.info("** Starting Maze Runner");
         try {
 
-            if (commandLine.hasOption("i")) {
+            if ((commandLine.hasOption("i")) && (!(commandLine.hasOption("p")))) {
 
                 String file = args[1];
 
                 logger.info("**** Reading the maze from file " + file);
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 String line;
+
+                ArrayList<ArrayList<String>> mazeMapArrayList = new ArrayList<ArrayList<String>>();
+
+                int rowCount = 0;
                 while ((line = reader.readLine()) != null) {
                     for (int idx = 0; idx < line.length(); idx++) {
+                        char characterInLine = line.charAt(idx);
+                        String singleStringInLine = Character.toString(characterInLine);
+
+                        mazeMapArrayList.get(rowCount).add(idx, singleStringInLine);
+
                         if (line.charAt(idx) == '#') {
                             logger.trace("WALL ");
                         } else if (line.charAt(idx) == ' ') {
                             logger.trace("PASS ");
                         }
                     }
+                    rowCount += 1;
                     logger.trace(System.lineSeparator());
                 }
 
+                String[][] mazeMapArray = new String[mazeMapArrayList.size()][];
+
+                //Converting 2d ArrayList to 2d Array
+                for (int i = 0; i < mazeMapArrayList.size(); i++) {
+                    ArrayList<String> mazeRowArrayList = mazeMapArrayList.get(i);
+
+                    String[] mazeRowArray = new String[mazeMapArrayList.get(0).size()];
+
+                    for (int j = 0; j < mazeRowArrayList.size(); j++) {
+                        mazeRowArray[j] = mazeRowArrayList.get(j);
+                    }
+
+                    if (mazeRowArrayList.size() < mazeMapArrayList.get(0).size()) {
+                        System.out.println(i);
+                        for (int j = mazeRowArrayList.size(); j < mazeMapArrayList.get(1).size(); j++) {
+                            mazeRowArray[j] = " ";
+                        }     
+                    }
+
+                    mazeMapArray[i] = mazeRowArray;
+                }
+
+                MazeRunnerGame mazeRunnerObject = new MazeRunnerGamePathMachine(mazeMapArray);
+                mazeRunnerObject.printMazePath();
+
             }
 
-            if (commandLine.hasOption("p")) {
+            if ((commandLine.hasOption("i")) && (commandLine.hasOption("p"))) {
 
+                String file = args[1];
                 String pathInput = args[3];
-                logger.info("Path Verified ");
+
+                logger.info("**** Reading the maze from file " + file);
+
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+
+                String line;
+
+                ArrayList<ArrayList<String>> mazeMapArrayList = new ArrayList<ArrayList<String>>();
+                
+                int rowCount = 0;
+                while ((line = reader.readLine()) != null) {
+
+                    mazeMapArrayList.add(new ArrayList<String>(line.length()));
+
+                    for (int idx = 0; idx < line.length(); idx++) {
+                        char characterInLine = line.charAt(idx);
+                        String singleStringInLine = Character.toString(characterInLine);
+
+                        mazeMapArrayList.get(rowCount).add(idx, singleStringInLine);
+
+                        if (line.charAt(idx) == '#') {
+                            logger.trace("WALL ");
+                        } else if (line.charAt(idx) == ' ') {
+                            logger.trace("PASS ");
+                        }
+                    }
+                    rowCount += 1;
+                    logger.trace(System.lineSeparator());
+                }
+
+
+                String[][] mazeMapArray = new String[mazeMapArrayList.size()][];
+
+                //Converting 2d ArrayList to 2d Array
+                for (int i = 0; i < mazeMapArrayList.size(); i++) {
+                    ArrayList<String> mazeRowArrayList = mazeMapArrayList.get(i);
+
+                    String[] mazeRowArray = new String[mazeMapArrayList.get(0).size()];
+
+                    for (int j = 0; j < mazeRowArrayList.size(); j++) {
+                        mazeRowArray[j] = mazeRowArrayList.get(j);
+                    }
+
+                    if (mazeRowArrayList.size() < mazeMapArrayList.get(0).size()) {
+                        for (int j = mazeRowArrayList.size(); j < mazeMapArrayList.get(1).size(); j++) {
+                            mazeRowArray[j] = " ";
+                        }     
+                    }
+
+                    mazeMapArray[i] = mazeRowArray;
+                }
+
+                logger.info("**** Computing path");
+                MazeRunnerGame mazeRunnerObject = new MazeRunnerGamePathMachine(mazeMapArray);
+                logger.info("**** User Given Success Path is " + mazeRunnerObject.verifyMazePath(pathInput));
 
             }
 
         } catch(Exception e) {
             logger.error("/!\\ An error has occured /!\\");
-        }
-        logger.info("**** Computing path");
-        logger.info("PATH NOT COMPUTED");
+        };
         logger.info("** End of MazeRunner");
 
     }
