@@ -57,8 +57,6 @@ abstract class MazeRunnerGame {
 
 class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
-    private static final Logger logger = LogManager.getLogger();
-
     public MazeRunnerGamePathMachine(String[][] gameMap) {
         super(gameMap);
 
@@ -201,29 +199,79 @@ class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
     }
 
+    public String chooseToTurn() {
+
+        int[] currentMarkerPosition = new int[2];
+        currentMarkerPosition[0] = markerPosition[0];
+        currentMarkerPosition[1] = markerPosition[1];
+
+        String stringMarkerDirection = markerDirection.toString();
+
+        if (stringMarkerDirection.equals("North")) {
+
+            if (mazeRunnerMap[currentMarkerPosition[0]][currentMarkerPosition[1] + 1].equals(" ")) { // Checking if there is an empty space to the right
+                turnRight();
+                return "R";
+            } else if (mazeRunnerMap[currentMarkerPosition[0] - 1][currentMarkerPosition[1]].equals("#")) { // Checking if the area infront is blocked
+                turnLeft();
+                return "L";
+            }
+
+        }else if (stringMarkerDirection.equals("East")) {
+
+            if (mazeRunnerMap[currentMarkerPosition[0] + 1][currentMarkerPosition[1]].equals(" ")) { // Checking if there is an empty space to the right
+                turnRight();
+                return "R";
+            } else if (mazeRunnerMap[currentMarkerPosition[0]][currentMarkerPosition[1] + 1].equals("#")) { // Checking if the area infront is blocked
+                turnLeft();
+                return "L";
+            }
+
+        }else if (stringMarkerDirection.equals("South")) {
+
+            if (mazeRunnerMap[currentMarkerPosition[0]][currentMarkerPosition[1] - 1].equals(" ")) { // Checking if there is an empty space to the right
+                turnRight();
+                return "R";
+            } else if (mazeRunnerMap[currentMarkerPosition[0] + 1][currentMarkerPosition[1]].equals("#")) { // Checking if the area infront is blocked
+                turnLeft();
+                return "L";
+            }
+
+        }else if (stringMarkerDirection.equals("West")) {
+
+            if (mazeRunnerMap[currentMarkerPosition[0] - 1][currentMarkerPosition[1]].equals(" ")) { // Checking if there is an empty space to the right
+                turnRight();
+                return "R";
+            } else if (mazeRunnerMap[currentMarkerPosition[0]][currentMarkerPosition[1] - 1].equals("#")) { // Checking if the area infront is blocked
+                turnLeft();
+                return "L";
+            }
+
+        }
+
+        return "";
+
+    }
+
     public void printMazePath(){
 
         StringBuffer canonicalPath = new StringBuffer();
 
         while (true) {
 
+            canonicalPath.append(chooseToTurn());
             if (verifyNextMovement()) {
-
                 moveForward();
                 canonicalPath.append("F");
 
                 if (markerPosition[1] == (mazeRunnerMap[0].length - 1)) {
 
-                    logger.info("The Canonical Path is " + canonicalPath.toString());
+                    String factorizedPath = convertCanonicalToFactorized(canonicalPath.toString()).toString();
+
+                    System.out.println("The Canonical Path is " + factorizedPath.toString());
 
                     break;
                 }
-                    
-            } else {
-
-                logger.info("Out of scope for simple Algorithim");
-
-                break;
 
             }
 
@@ -292,7 +340,6 @@ class MazeRunnerGamePathMachine extends MazeRunnerGame {
 
             } else {
 
-                System.out.println("Invalid User Input");
                 return false;
 
             }
@@ -322,14 +369,11 @@ public class Main {
         CommandLineParser commandLineParser = new DefaultParser();
         CommandLine commandLine = commandLineParser.parse( options, args);        
 
-        logger.info("** Starting Maze Runner");
         try {
 
             if ((commandLine.hasOption("i")) && (!(commandLine.hasOption("p")))) {
 
                 String file = args[1];
-
-                logger.info("**** Reading the maze from file " + file);
 
                 BufferedReader reader = new BufferedReader(new FileReader(file));
 
@@ -347,15 +391,8 @@ public class Main {
                         String singleStringInLine = Character.toString(characterInLine);
 
                         mazeMapArrayList.get(rowCount).add(idx, singleStringInLine);
-
-                        if (line.charAt(idx) == '#') {
-                            logger.trace("WALL ");
-                        } else if (line.charAt(idx) == ' ') {
-                            logger.trace("PASS ");
-                        }
                     }
                     rowCount += 1;
-                    logger.trace(System.lineSeparator());
                 }
 
 
@@ -380,7 +417,6 @@ public class Main {
                     mazeMapArray[i] = mazeRowArray;
                 }
 
-                logger.info("**** Computing path");
                 MazeRunnerGame mazeRunnerObject = new MazeRunnerGamePathMachine(mazeMapArray);
                 mazeRunnerObject.printMazePath();
 
@@ -391,8 +427,6 @@ public class Main {
                 String file = args[1];
                 String pathInput = args[3];
 
-                logger.info("**** Reading the maze from file " + file);
-
                 BufferedReader reader = new BufferedReader(new FileReader(file));
 
                 String line;
@@ -410,14 +444,8 @@ public class Main {
 
                         mazeMapArrayList.get(rowCount).add(idx, singleStringInLine);
 
-                        if (line.charAt(idx) == '#') {
-                            logger.trace("WALL ");
-                        } else if (line.charAt(idx) == ' ') {
-                            logger.trace("PASS ");
-                        }
                     }
                     rowCount += 1;
-                    logger.trace(System.lineSeparator());
                 }
 
 
@@ -442,16 +470,14 @@ public class Main {
                     mazeMapArray[i] = mazeRowArray;
                 }
 
-                logger.info("**** Computing path");
                 MazeRunnerGame mazeRunnerObject = new MazeRunnerGamePathMachine(mazeMapArray);
-                logger.info("**** User Given Success Path is " + mazeRunnerObject.verifyMazePath(pathInput));
+                System.out.println("User Given Success Path is " + mazeRunnerObject.verifyMazePath(pathInput));
 
             }
 
         } catch(Exception e) {
-            logger.error("/!\\ An error has occured /!\\");
+            System.out.println("/!\\ An error has occured /!\\");
         };
-        logger.info("** End of MazeRunner");
 
     }
 }
