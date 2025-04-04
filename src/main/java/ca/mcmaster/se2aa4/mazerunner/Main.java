@@ -1,14 +1,6 @@
 package ca.mcmaster.se2aa4.mazerunner;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-
 import java.lang.String;
-import java.util.*;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -17,8 +9,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class Main {
-
-    private static final Logger logger = LogManager.getLogger();
 
     public static void main(String[] args) throws ParseException {
 
@@ -35,8 +25,8 @@ public class Main {
 
                 String file = args[1];
 
-                MazeRunnerGame mazeRunnerObject = new MazeRunnerGamePathMachine(file);
-                mazeRunnerObject.printMazePath();
+                Player player = new Player(file, null);
+                player.findPathSolution();
 
             }
 
@@ -45,8 +35,8 @@ public class Main {
                 String file = args[1];
                 String pathInput = args[3];
 
-                MazeRunnerGame mazeRunnerObject = new MazeRunnerGamePathMachine(file);
-                System.out.println("User Given Success Path is " + mazeRunnerObject.verifyMazePath(pathInput));
+                Player player = new Player(file, pathInput);
+                System.out.println("User Given Success Path is " + player.verifyMazePath());
 
             }
 

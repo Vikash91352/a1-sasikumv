@@ -1,21 +1,17 @@
 package ca.mcmaster.se2aa4.mazerunnertest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.String;
-import java.util.*;
 
-import ca.mcmaster.se2aa4.mazerunner.MazeRunnerGamePathMachine;
+import ca.mcmaster.se2aa4.mazerunner.Player;
+import ca.mcmaster.se2aa4.mazerunner.PlayerMarker;
+import ca.mcmaster.se2aa4.mazerunner.MazeGame;
+import ca.mcmaster.se2aa4.mazerunner.enums.*;
+import ca.mcmaster.se2aa4.mazerunner.PathInstructionActions;
 
 public class MainTest {
 
@@ -24,83 +20,89 @@ public class MainTest {
     @Test
     public void testVerifyMazePath() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
-        assertTrue(mazeRunnerGame.verifyMazePath("FRFFLFFFRFLFRFLFF"), "This is the correct path");
+        Player player = new Player(file, "FRFFLFFFRFLFRFLFF");
+        assertTrue(player.verifyMazePath(), "This is the correct path");
 
     }
 
     @Test
     public void testConvertCanonicalToFactorized() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
-        assertEquals(mazeRunnerGame.convertCanonicalToFactorized("FRFFLFFFRFLFRFLRR"), "1F1R2F1L3F1R1F1L1F1R1F1L2R");
+        PathInstructionActions pathInstructionActions = new PathInstructionActions();
+        assertEquals(pathInstructionActions.convertToFactorizedPath("FRFFLFFFRFLFRFLRR"), "1F1R2F1L3F1R1F1L1F1R1F1L2R");
 
     }
 
     @Test
     public void testChooseToTurn() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
-        assertEquals(mazeRunnerGame.chooseToTurn(), new String(""));
+        Player player = new Player(file, null);
+        int[] initialPosition = {1,0};
+
+        assertEquals(player.makeTurningDecision(Direction.East,initialPosition).write(), new String(""));
 
     }
 
     @Test
     public void testVerifyNextMovement() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
-        assertTrue(mazeRunnerGame.verifyNextMovement());
+        Player player = new Player(file, null);
+        int[] initialPosition = {1,0};
+
+        assertTrue(player.verifyNextMovement(Direction.East,initialPosition));
 
     }
 
     @Test
     public void testTurnRight() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
-        assertEquals(mazeRunnerGame.turnRight(), "South");
+        PlayerMarker marker = new PlayerMarker();
+        assertEquals(marker.turnRight(Direction.East), Direction.South);
 
     }
 
     @Test
     public void testTurnLeft() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
-        assertEquals(mazeRunnerGame.turnLeft(), "North");
+        PlayerMarker marker = new PlayerMarker();
+        assertEquals(marker.turnLeft(Direction.East),  Direction.North);
 
     }
 
     @Test
     public void testMoveForward() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
-        assertEquals(mazeRunnerGame.moveForward()[1], 1);
+        PlayerMarker marker = new PlayerMarker();
+        int[] initialPosition = {1,0};
+
+        assertEquals(marker.moveForward(Direction.East, initialPosition)[1], 1);
 
     }
 
     @Test
     public void testFindWestSideEntrance() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
+        MazeGame maze = new MazeGame(file);
         int[] initialPosition = {1,0};
-        assertArrayEquals(mazeRunnerGame.findWestSideEntrance(), initialPosition, "Same Starting positions");
+        assertArrayEquals(maze.findWestSideEntrance(file), initialPosition, "Same Starting positions");
 
     }
 
     @Test
     public void testCreateMapArray() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
-        String[][] generatedMap = {{"#","#","#","#","#","#","#","#"},{" "," ","#","#","#","#","#","#"},{"#"," ","#","#","#","#","#","#"},{"#"," "," "," "," "," ","#","#"},{"#","#","#","#"," "," ","#","#"},{"#","#","#","#","#"," "," "," "},{"#","#","#","#","#","#","#","#"}};
-        assertArrayEquals(mazeRunnerGame.createMapArray(file), generatedMap, "Same Map generated");
+        MazeGame maze = new MazeGame(file);
+        PathBlock[][] generatedMap = {{PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL},{PathBlock.PASS,PathBlock.PASS,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL},{PathBlock.WALL,PathBlock.PASS,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL},{PathBlock.WALL,PathBlock.PASS,PathBlock.PASS,PathBlock.PASS,PathBlock.PASS,PathBlock.PASS,PathBlock.WALL,PathBlock.WALL},{PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.PASS,PathBlock.PASS,PathBlock.WALL,PathBlock.WALL},{PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.PASS,PathBlock.PASS,PathBlock.PASS},{PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL,PathBlock.WALL}};
+        assertArrayEquals(maze.createMaze(file), generatedMap, "Same Map generated");
 
     }    
 
     @Test
     public void testGetMarkerPosition() {
 
-        MazeRunnerGamePathMachine mazeRunnerGame = new MazeRunnerGamePathMachine(file);
+        Player player = new Player(file, null);
         int[] initialPosition = {1,0};
-        assertArrayEquals(mazeRunnerGame.getMarkerPosition(), initialPosition, "Same Starting positions");
+        assertArrayEquals(player.getMarkerPosition(), initialPosition, "Same Starting positions");
 
     }  
 }
